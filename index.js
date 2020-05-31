@@ -9,13 +9,16 @@ const {prefix, token} = require('./config.json');
 
 //MODULES
 const audioStream = require('./modules/audioStream.js');
+const utils = require('./modules/utils.js');
 
+console.log('----------STARTING BOT----------');
 const client = new djs.Client();
 client.login(token);
 
+//EVENTS
 client.on('ready', () => {
 
-  console.log(`Logged in as ${client.user.tag}!`);
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('reconnecting', () => {
@@ -25,15 +28,19 @@ client.on('reconnecting', () => {
 
 client.on('disconnect', () => {
 
-    console.log(`${client.user.tag} disconnect!`);
+    console.log(`${client.user.tag} disconnected!`);
 });
 
+//MESSAGE EVENTS
 client.on('message', async message => {
 
     if (message.author.bot || !message.content.startsWith(prefix)) {
     
         return;
     }
+
+    utils.debug('Message recieved, parsing...');
+
     if (message.content.startsWith(`${prefix}play`)) {
 
         audioStream.add(message);
