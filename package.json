@@ -1,0 +1,23 @@
+{
+  "name": "Moon-bot",
+  "version": "1.0.0",
+  "repository": "https://github.com/DBRLib/Discord---Moon-Bot.git",
+  "description": "A catch-all trash bot.",
+  "main": "index.js",
+  "keywords": [
+    "discord",
+    "music",
+    "meme",
+    "bot"
+  ],
+  "author": "Deven Ronquillo",
+  "license": "N/A",
+  "dependencies": {
+    "@discordjs/opus": ">=0.3.2",
+    "discord.js": ">=12.2.0",
+    "ytdl-core": ">=2.1.5",
+    "ffmpeg": ">=0.0.4",
+    "fluent-ffmpeg": ">=2.1.2"
+    
+  }
+}
