@@ -51,8 +51,10 @@ module.exports.add = async (message) => {
 
     //FETCH SONG
     const songInfo = await ytdl.getInfo(args[1]);
-    const song = {author: songInfo.author, title: songInfo.title, url: songInfo.video_url};
-
+    const song = {author: songInfo.author.name, title: songInfo.title, url: songInfo.video_url, length: songInfo.length_seconds};
+    utils.debug('----------SONG DATA----------');//debug
+    //utils.debug(songInfo);//debug
+    utils.debug('----------SONG FUCUSED DATA----------');//debug
     utils.debug(song);//debug
 
     //CHECK/CREATE QUEUE
@@ -62,7 +64,7 @@ module.exports.add = async (message) => {
 
         utils.debug(`Building new queue for guild: ${message.guild.name}...`);//debug
 
-        const queueContruct = {textChannel: message.channel, voiceChannel: voiceChannel, connection: null, songs: [], volume: 2, playing: true};
+        const queueContruct = {textChannel: message.channel, voiceChannel: voiceChannel, connection: null, songs: [], volume: 1, playing: true};
         queueContruct.songs.push(song);
 
         utils.debug(`${song.title} added to queue!`);//debug
@@ -114,20 +116,32 @@ module.exports.play = (guildID) => {
     utils.debug('Creating dispatcher...');//debug
 
     //START PLAYBACK
-    const dispatcher = guildQueue.connection.play(ytdl(guildQueue.songs[0].url)).on("finish", () => {
+    const dispatcher = guildQueue.connection.play(ytdl(guildQueue.songs[0].url, {quality: 'lowestaudio'})).on("finish", () => {
 
         utils.debug('Song finished!');//debug
         utils.debug('Recursively playing next queued song...');//debug
         
         guildQueue.songs.shift();
         this.play(guildID);
-    }).on("error", error => console.error(error));
+    }).on("error", error => {
+        
+        utils.debug('Error in dispatcher! stopping playback...');//debug
+        utils.debug(error);
+
+        guildQueue.songs = [];
+        guildQueue.connection.dispatcher.end();
+        utils.debug('Queue Cleared! Dispatcher killed!');//debug
+        
+    });
 
     utils.debug('Setting dispatcher volume...');//debug
     dispatcher.setVolumeLogarithmic(guildQueue.volume / 10);
 
-    utils.debug(`${guildQueue.songs[0].title} playback started expected run time is: Timer created.`);//debug
+    utils.debug(`${guildQueue.songs[0].title} playback started expected run time is: ${guildQueue.songs[0].length}s`);//debug
     guildQueue.textChannel.send(`Start playing: **${guildQueue.songs[0].title}** by ${guildQueue.songs[0].author}`);
+
+    utils.debug('Creating monitor...');
+    utils.monitor(dispatcher, guildQueue.songs[0].length*1000);
 }
 
 module.exports.skip = (message) => {
